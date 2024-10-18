@@ -1,2 +1,4 @@
 autogenstudio
 chainlit
+openai
+langchain
