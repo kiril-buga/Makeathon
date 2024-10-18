@@ -1,4 +1,14 @@
 autogenstudio
 chainlit
 openai
+# Huggingface
+huggingface-hub
+# Langchain
 langchain
+langchain-chroma
+langchain-community
+langchain-core
+langchain-huggingface
+langchain-openai
+langchain-text-splitters
+langchain-groq
