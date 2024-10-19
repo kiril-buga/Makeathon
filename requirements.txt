@@ -3,8 +3,13 @@ chainlit
 openai
 # Chroma
 chroma
+# Streamlit
+streamlit
+#tabulate
+#timm
 # Huggingface
 huggingface-hub
+transformers
 # Langchain
 langchain
 langchain-chroma
