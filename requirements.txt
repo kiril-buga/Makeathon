@@ -12,3 +12,4 @@ langchain-huggingface
 langchain-openai
 langchain-text-splitters
 langchain-groq
+langgraph
