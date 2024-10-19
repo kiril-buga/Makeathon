@@ -1,6 +1,8 @@
 autogenstudio
 chainlit
 openai
+# Chroma
+chroma
 # Huggingface
 huggingface-hub
 # Langchain
