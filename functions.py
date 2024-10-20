@@ -34,6 +34,7 @@ def set_tokens():
         raise Exception("No API Token Provided!")
 
 def use_huggingface_endpoint(_model, _temperature: 0.5, _max_new_tokens: int = 1024):
+    set_tokens()
 
     callbacks = [StreamingStdOutCallbackHandler()]  # Callback for streaming output
     llm = HuggingFaceEndpoint(
@@ -70,10 +71,12 @@ def use_huggingface_object_detection(_model, _temperature: 0.5, _max_new_tokens:
 
 def get_image_caption(image_path):
     """Generates a short caption for the provided image...."""
+    set_tokens()
+
     encoded_image = encode_image(image_path)
 
-    image = Image.open(image_path).convert('RGB')
-    model_name = "Salesforce/blip-image-captioning-large"
+    #image = Image.open(image_path).convert('RGB')
+    # model_name = "Salesforce/blip-image-captioning-large"
     model_name = "meta-llama/Llama-3.2-11B-Vision-Instruct"
     # image_to_text = pipeline("image-to-text", model=model_name) image_to_text(image)
 
@@ -102,7 +105,6 @@ def summarize_image(encoded_image):
     model = "meta-llama/Llama-3.2-11B-Vision-Instruct"
     llm = use_huggingface_endpoint(model, 0.5)
 
-
     prompt = [
         AIMessage(content="You are a bot that is good at analyzing images."),
         HumanMessage(content=[
@@ -121,19 +123,31 @@ def summarize_image(encoded_image):
 
 def detect_objects(image_path):
     """Detects objects in the provided image...."""
+    set_tokens()
+
     image = Image.open(image_path).convert('RGB')
 
     encoded_image = encode_image(image_path)
 
-    model_name = "facebook/detr-resnet-101"
+    model_name = "facebook/detr-resnet-50"
     # Hugging Face API URL for DETR model
     client = InferenceClient(
         model_name,
         token=HUGGINGFACEHUB_API_TOKEN,
     )
 
-    response = client.object_detection(image_path)
-    return response
+    results = client.object_detection(image_path)
+
+    detections = ""
+    for result in results:
+        box = result.box
+        label = result.label
+        score = result.score
+        detections += f"[{int(box.xmin)}, {int(box.ymin)}, {int(box.xmax)}, {int(box.ymax)}]"
+        detections += f"{label}"
+        detections += f" {float(score)}\n"
+
+    return detections
 
 def classify(image, model, class_names):
     """Classifies the provided image...."""
@@ -153,5 +167,5 @@ def encode_image(image_path):
 
 if __name__ == '__main__':
     set_tokens()
-    caption = detect_objects(image_path)
-    print(caption)
+    detections = detect_objects(image_path)
+    print(detections)
