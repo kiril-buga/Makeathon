@@ -1,4 +1,8 @@
 import streamlit as st
+#from keras.models import load_model
+from PIL import Image
+
+from functions import *
 
 st.title('Hello World')
 
@@ -8,7 +12,15 @@ file = st.file_uploader("Choose an image...", type=["jpeg", "jpg", "png"])
 
 if file:
     # display the image
-    st.image(file, caption="Uploaded Image.", use_column_width=True)
+    image = Image.open(file).convert('RGB')
+    st.image(image, caption="Uploaded Image.", use_column_width=True)
+
+    # classify the image
+    class_name, conf_score = classify(image, model, class_names)
+
+    # write classification results
+    st.write("## {}".format(class_name))
+    st.write("Confidence score: {:.2f}".format(conf_score))
 
     # text input
     user_question = st.text_input("Ask a question about the aircraft in the image:")

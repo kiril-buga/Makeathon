@@ -1,13 +1,20 @@
 import os
+import base64
+import requests
+
 
 from PIL import Image
 from dotenv import load_dotenv
+from huggingface_hub import InferenceApi, InferenceClient
+from sympy.logic.algorithms.z3_wrapper import encoded_cnf_to_z3_solver
 from transformers import pipeline
 from langchain_core.callbacks import StreamingStdOutCallbackHandler
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_huggingface import HuggingFacePipeline, HuggingFaceEndpoint, ChatHuggingFace
+from langchain.tools import Tool
 
 image_path = 'data/example_aircraft.png'
+
 
 
 def set_tokens():
@@ -27,7 +34,7 @@ def set_tokens():
         raise Exception("No API Token Provided!")
 
 def use_huggingface_endpoint(_model, _temperature: 0.5, _max_new_tokens: int = 1024):
-    set_tokens()
+
     callbacks = [StreamingStdOutCallbackHandler()]  # Callback for streaming output
     llm = HuggingFaceEndpoint(
         repo_id=_model,
@@ -44,31 +51,36 @@ def use_huggingface_endpoint(_model, _temperature: 0.5, _max_new_tokens: int = 1
     )
     return ChatHuggingFace(llm=llm,  model_id=_model, timeout=1000, streaming=False, verbose=True) # max_new_tokens=_max_new_tokens
 
+def use_huggingface_object_detection(_model, _temperature: 0.5, _max_new_tokens: int = 1024):
+    callbacks = [StreamingStdOutCallbackHandler()]  # Callback for streaming output
+    llm = HuggingFaceEndpoint(
+        repo_id=_model,
+        max_new_tokens=_max_new_tokens,
+        huggingfacehub_api_token=HUGGINGFACEHUB_API_TOKEN,
+        task="object-detection",
+        temperature=_temperature,
+        repetition_penalty=1.03,
+        callbacks=callbacks,
+        do_sample=False,
+        # stop_sequences=["<|eot_id|>"],
+        streaming=False,
+        timeout=1000,
+    )
+    return llm
+
 def get_image_caption(image_path):
     """Generates a short caption for the provided image...."""
-    image = Image.open(image_path).convert('RGB')
+    encoded_image = encode_image(image_path)
 
+    image = Image.open(image_path).convert('RGB')
     model_name = "Salesforce/blip-image-captioning-large"
-
-    image_to_text = pipeline("image-to-text", model=model_name)
-
-    return image_to_text(image)
-
-def get_image_caption2(image_path):
-    """Generates a short caption for the provided image...."""
-
-    import base64
-    with open(image_path, "rb") as image_file:
-        encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
-
-    image = Image.open(image_path).convert('RGB')
-
     model_name = "meta-llama/Llama-3.2-11B-Vision-Instruct"
+    # image_to_text = pipeline("image-to-text", model=model_name) image_to_text(image)
 
     prompt = [
         AIMessage(content="You are a bot that is a technical expert at analyzing aircraft images."),
         HumanMessage(content=[
-            {"type": "text", "text": "Provide the model of the airplane. You need to mention all airplane parts you see in the image."},
+            {"type": "text", "text": "Provide the model of the aircraft. Then, provide a list of all aircraft elements you see in the image."},
             {
                 "type": "image_url",
                 "image_url": {
@@ -78,14 +90,10 @@ def get_image_caption2(image_path):
         ])
     ]
 
-    llm = use_huggingface_endpoint(model_name, 0.5)
-    response = llm.bind(max_tokens=1024).bind().invoke(prompt)
+    llm = use_huggingface_endpoint(model_name, 0.3)
+    response = llm.bind(max_tokens=1024).invoke(prompt)
 
     return response.content
-
-    image_to_text = pipeline("image-to-text", model=model_name)
-
-    return image_to_text(image)
 
 
 # Function for image summaries
@@ -113,7 +121,24 @@ def summarize_image(encoded_image):
 
 def detect_objects(image_path):
     """Detects objects in the provided image...."""
-    pass
+    image = Image.open(image_path).convert('RGB')
+
+    encoded_image = encode_image(image_path)
+
+    model_name = "facebook/detr-resnet-101"
+    # Hugging Face API URL for DETR model
+    client = InferenceClient(
+        model_name,
+        token=HUGGINGFACEHUB_API_TOKEN,
+    )
+
+    response = client.object_detection(image_path)
+    return response
+
+def classify(image, model, class_names):
+    """Classifies the provided image...."""
+
+    return 'dummy_class_name', 0.0
 
 def query_image_huggingface(filename):
     import requests
@@ -122,6 +147,11 @@ def query_image_huggingface(filename):
     response = requests.post(API_URL, headers=headers, files={"file": image_data})
     return response.json()
 
+def encode_image(image_path):
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode('utf-8')
+
 if __name__ == '__main__':
-    caption = get_image_caption2(image_path)
+    set_tokens()
+    caption = detect_objects(image_path)
     print(caption)
