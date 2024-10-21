@@ -3,7 +3,7 @@ import base64
 import requests
 
 
-from PIL import Image
+from PIL import Image, ImageDraw
 from dotenv import load_dotenv
 from huggingface_hub import InferenceApi, InferenceClient
 from sympy.logic.algorithms.z3_wrapper import encoded_cnf_to_z3_solver
@@ -137,7 +137,7 @@ def detect_objects(image_path):
     )
 
     results = client.object_detection(image_path)
-
+    draw = ImageDraw.Draw(image)
     detections = ""
     for result in results:
         box = result.box
@@ -146,6 +146,12 @@ def detect_objects(image_path):
         detections += f"[{int(box.xmin)}, {int(box.ymin)}, {int(box.xmax)}, {int(box.ymax)}]"
         detections += f"{label}"
         detections += f" {float(score)}\n"
+
+        x0, y0, x1, y1 = box.xmin, box.ymin, box.xmax, box.ymax
+        draw.rectangle([x0, y0, x1, y1], outline='red', width=5)
+        draw.text((x0, y0), label, fill='white', font_size=24)
+
+        image.show()
 
     return detections
 
