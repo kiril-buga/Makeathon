@@ -10,7 +10,10 @@ from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 import functions
 from tools import ImageCaptionTool, ObjectDetectionTool
 
-
+st.set_page_config(
+    page_title="Let's fly",
+    page_icon="✈️",
+)
 ##############################
 ### initialize agent #########
 ##############################
@@ -35,7 +38,7 @@ agent = initialize_agent(
     early_stoppy_method='generate'
 )
 
-st.title('Swiss Airlines Chatbot')
+#st.title('Swiss Airlines Chatbot')
 
 st.header("Please upload an image of an aircraft")
 
@@ -72,4 +75,6 @@ if file:
         if user_question and user_question != "":
             with st.spinner(text="In progress..."):
                 response = agent.run(f'{user_question}, this is the image path: {image_path}')
+                print(response)
                 st.write(response)
+

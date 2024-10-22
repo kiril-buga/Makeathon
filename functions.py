@@ -1,3 +1,4 @@
+import streamlit as st
 import os
 import base64
 import requests
@@ -11,10 +12,9 @@ from transformers import pipeline
 from langchain_core.callbacks import StreamingStdOutCallbackHandler
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_huggingface import HuggingFacePipeline, HuggingFaceEndpoint, ChatHuggingFace
-from langchain.tools import Tool
+from langchain_core.tools import tool
 
 image_path = 'data/example_aircraft.png'
-
 
 
 def set_tokens():
@@ -151,9 +151,7 @@ def detect_objects(image_path):
         draw.rectangle([x0, y0, x1, y1], outline='red', width=5)
         draw.text((x0, y0), label, fill='white', font_size=24)
 
-        image.show()
-
-    return detections
+    return image, detections
 
 def classify(image, model, class_names):
     """Classifies the provided image...."""
