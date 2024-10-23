@@ -16,7 +16,7 @@ from langchain_core.tools import tool
 
 image_path = 'data/example_aircraft.png'
 
-@st.cache_data
+
 def set_tokens():
     global HUGGINGFACEHUB_API_TOKEN
     global GROQ_API_KEY
@@ -89,8 +89,8 @@ def get_image_caption(image_path):
         ])
     ]
 
-    llm = use_huggingface_endpoint(model_name, 0.3)
-    response = llm.bind(max_tokens=1024).invoke(prompt)
+    llm = use_huggingface_endpoint(model_name, 0.2)
+    response = llm.bind(max_tokens=1024, temperature=0.2).invoke(prompt)
 
     return response.content
 
