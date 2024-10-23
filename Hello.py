@@ -70,8 +70,9 @@ if file:
         f.write(file.getbuffer())
         image_path = f.name
 
-        caption = functions.get_image_caption(image_path)
-        st.write(caption)
+        with st.spinner(text="Detecting aircraft components..."):
+            caption = functions.get_image_caption(image_path)
+            st.write(caption)
 
         # text input
         user_question = st.text_input("Ask a question about the aircraft in the image: ")
