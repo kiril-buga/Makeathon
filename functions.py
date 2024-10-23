@@ -16,7 +16,7 @@ from langchain_core.tools import tool
 
 image_path = 'data/example_aircraft.png'
 
-
+@st.cache_data
 def set_tokens():
     global HUGGINGFACEHUB_API_TOKEN
     global GROQ_API_KEY
@@ -34,8 +34,6 @@ def set_tokens():
         raise Exception("No API Token Provided!")
 
 def use_huggingface_endpoint(_model, _temperature: 0.5, _max_new_tokens: int = 1024):
-    set_tokens()
-
     callbacks = [StreamingStdOutCallbackHandler()]  # Callback for streaming output
     llm = HuggingFaceEndpoint(
         repo_id=_model,
@@ -47,10 +45,10 @@ def use_huggingface_endpoint(_model, _temperature: 0.5, _max_new_tokens: int = 1
         callbacks=callbacks,
         do_sample=False,
         # stop_sequences=["<|eot_id|>"],
-        streaming=False,
+        streaming=True,
         timeout=1000,
     )
-    return ChatHuggingFace(llm=llm,  model_id=_model, timeout=1000, streaming=False, verbose=True) # max_new_tokens=_max_new_tokens
+    return ChatHuggingFace(llm=llm,  model_id=_model, timeout=1000, streaming=True, verbose=True) # max_new_tokens=_max_new_tokens
 
 def use_huggingface_object_detection(_model, _temperature: 0.5, _max_new_tokens: int = 1024):
     callbacks = [StreamingStdOutCallbackHandler()]  # Callback for streaming output
@@ -64,15 +62,13 @@ def use_huggingface_object_detection(_model, _temperature: 0.5, _max_new_tokens:
         callbacks=callbacks,
         do_sample=False,
         # stop_sequences=["<|eot_id|>"],
-        streaming=False,
+        streaming=True,
         timeout=1000,
     )
     return llm
 
 def get_image_caption(image_path):
     """Generates a short caption for the provided image...."""
-    set_tokens()
-
     encoded_image = encode_image(image_path)
 
     #image = Image.open(image_path).convert('RGB')
@@ -123,8 +119,6 @@ def summarize_image(encoded_image):
 
 def detect_objects(image_path):
     """Detects objects in the provided image...."""
-    set_tokens()
-
     image = Image.open(image_path).convert('RGB')
 
     encoded_image = encode_image(image_path)

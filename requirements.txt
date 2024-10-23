@@ -1,6 +1,8 @@
 autogenstudio
 chainlit
 openai
+# Object detection
+opencv-python
 # Chroma
 chroma
 # Streamlit

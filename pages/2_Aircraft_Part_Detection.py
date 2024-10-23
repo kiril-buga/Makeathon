@@ -3,7 +3,8 @@ import streamlit as st
 import cv2
 import numpy as np
 
-
+# if complains about cv2/libgl1 then run the following command
+# sudo apt-get install libgl1-mesa-glx
 def preprocess(img):
     bytes_data = np.asarray(bytearray(img.read()), dtype=np.uint8)
     img = cv2.imdecode(bytes_data, cv2.IMREAD_COLOR)

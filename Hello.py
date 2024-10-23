@@ -14,6 +14,11 @@ st.set_page_config(
     page_title="Let's fly",
     page_icon="✈️",
 )
+st.markdown("# Let's Fly ✈️")
+# st.sidebar.markdown("# Fly ✈️")
+
+functions.set_tokens()
+
 ##############################
 ### initialize agent #########
 ##############################
