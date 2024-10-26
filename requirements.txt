@@ -1,5 +1,4 @@
 autogenstudio
-chainlit
 openai
 # Object detection
 opencv-python
@@ -10,6 +9,7 @@ streamlit
 #tabulate
 #timm
 # Huggingface
+timm
 huggingface-hub
 transformers
 # Langchain
