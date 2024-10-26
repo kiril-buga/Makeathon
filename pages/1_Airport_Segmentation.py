@@ -70,13 +70,11 @@ file = st.file_uploader("Choose an image...", type=["jpeg", "jpg", "png"])
 if file:
     image = Image.open(file).convert('RGB')
     st.image(file, caption="Uploaded Image.", use_column_width=True)
-    with st.spinner(text="Detecting aircraft components..."):
+    with st.spinner(text="Segmenting aircraft components..."):
         # segment the image
         segmented_image = segment_image(file)
 
     st.image(segmented_image, caption="Segmented Image.", use_column_width=True)
-
-
 
 # if __name__ == "__main__":
     # segment_image("../data/example_airport.jpg")
