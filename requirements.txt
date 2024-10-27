@@ -2,6 +2,7 @@ autogenstudio
 openai
 # Object detection
 opencv-python
+opencv-python-headless # For streamlit deployment
 # Chroma
 chroma
 # Streamlit
