@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import streamlit as st
 import os
 import base64
@@ -117,33 +119,41 @@ def summarize_image(encoded_image):
     return response.content
 
 
-def detect_objects(image_path):
-    """Detects objects in the provided image...."""
-    image = Image.open(image_path).convert('RGB')
+def detect_objects(image_file):
+    """Detects objects in the provided image, accepting either a file path or in-memory image."""
 
-    encoded_image = encode_image(image_path)
+    # Handle in-memory file (BytesIO) or file path
+    if isinstance(image_file, BytesIO):
+        image = Image.open(image_file).convert('RGB')
+        # Extract raw bytes for the client
+        image_file.seek(0)  # Ensure we're at the start
+        image_bytes = image_file.read()
+    else:
+        image = Image.open(image_file).convert('RGB')
+        # Read file from path for raw bytes
+        with open(image_file, "rb") as f:
+            image_bytes = f.read()
 
     model_name = "facebook/detr-resnet-50"
-    # Hugging Face API URL for DETR model
     client = InferenceClient(
         model_name,
         token=HUGGINGFACEHUB_API_TOKEN,
     )
 
-    results = client.object_detection(image_path)
+    # Send the raw bytes to object_detection
+    results = client.object_detection(image=image_bytes)
     draw = ImageDraw.Draw(image)
     detections = ""
+
     for result in results:
         box = result.box
         label = result.label
         score = result.score
-        detections += f"[{int(box.xmin)}, {int(box.ymin)}, {int(box.xmax)}, {int(box.ymax)}]"
-        detections += f"{label}"
-        detections += f" {float(score)}\n"
+        detections += f"[{int(box.xmin)}, {int(box.ymin)}, {int(box.xmax)}, {int(box.ymax)}] {label} {float(score)}\n"
 
         x0, y0, x1, y1 = box.xmin, box.ymin, box.xmax, box.ymax
         draw.rectangle([x0, y0, x1, y1], outline='red', width=5)
-        draw.text((x0, y0), label, fill='white', font_size=24)
+        draw.text((x0, y0), label, fill='white')
 
     return image, detections
 
@@ -159,9 +169,19 @@ def query_image_huggingface(filename):
     response = requests.post(API_URL, headers=headers, files={"file": image_data})
     return response.json()
 
-def encode_image(image_path):
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode('utf-8')
+
+def encode_image(image_input):
+    """Encodes an image to a base64 string."""
+    # Check if the input is a file path or BytesIO object
+    if isinstance(image_input, str):  # File path
+        with open(image_input, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+    elif isinstance(image_input, BytesIO):  # In-memory file
+        encoded_string = base64.b64encode(image_input.getvalue()).decode("utf-8")
+    else:
+        raise TypeError("Unsupported image input type")
+
+    return encoded_string
 
 if __name__ == '__main__':
     set_tokens()
