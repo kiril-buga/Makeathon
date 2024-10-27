@@ -45,11 +45,11 @@ filters_to_funcs = {
     "Invert": invert,
     "Sketch": sketch,
 }
-filters = st.selectbox("...and now, apply a filter!", filters_to_funcs.keys())
+# filters = st.selectbox("...and now, apply a filter!", filters_to_funcs.keys())
 
 if picture:
     # Apply the selected filter
-    filtered_image = filters_to_funcs[filters](picture)
+    # filtered_image = filters_to_funcs[filters](picture)
     # st.image(filtered_image, channels="BGR")
 
     # Convert the picture to an in-memory file for object detection
