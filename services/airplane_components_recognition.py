@@ -95,10 +95,10 @@ def inference():
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(
         "COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 10
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 3
     cfg.MODEL.WEIGHTS = "../data/model_final.pth"
     cfg.MODEL.DEVICE = 'cpu'
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.8  # set a custom testing threshold
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.9  # set a custom testing threshold
     predictor = DefaultPredictor(cfg)
 
     outputs = predictor(im)

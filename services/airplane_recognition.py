@@ -4,7 +4,7 @@ from transformers import pipeline
 
 # image_path = "../data/example_aircraft.png"
 # image_path = "../data/example_aircraft.png"
-image_path = "../data/mock_up_plane.jpg"
+image_path = "../data/test_image.jpg"
 image = Image.open(image_path)
 
 # Install the required package
