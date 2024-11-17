@@ -1,3 +1,4 @@
+import os
 from io import BytesIO
 from tempfile import NamedTemporaryFile, gettempdir
 
@@ -6,6 +7,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
+from huggingface_hub import InferenceClient
 from transformers import pipeline
 
 
@@ -20,16 +22,33 @@ def calculate_centroid(mask):
 
 def segment_image(image_path: str):
     # Load the image
-    image = Image.open(image_path).convert('RGB')
+    if isinstance(image_path, BytesIO):
+        image = Image.open(image_path).convert('RGB')
+        # Extract raw bytes for the client
+        image_path.seek(0)  # Ensure we're at the start
+        image_bytes = image_path.read()
+    else:
+        image = Image.open(image_path).convert('RGB')
+        # Read file from path for raw bytes
+        with open(image_path, "rb") as f:
+            image_bytes = f.read()
     # Load the instance segmentation pipeline
-    instance_segmentation = pipeline("image-segmentation", model="facebook/detr-resnet-50-panoptic")
+    # instance_segmentation = pipeline("image-segmentation", model="facebook/detr-resnet-50-panoptic")
+    model_name = "nvidia/segformer-b1-finetuned-ade-512-512"
+    client = InferenceClient(
+        model_name,
+        token=os.getenv("HUGGINGFACEHUB_API_TOKEN"),
+    )
+
     # Perform instance segmentation on the image
-    result = instance_segmentation(image)
+    # result = instance_segmentation(image)
+    # Send the raw bytes to object_detection
+    results = client.image_segmentation(image=image_bytes)
 
     segmented_image = image.copy()
     draw = ImageDraw.Draw(segmented_image)
     # Loop through the results and draw each segment with a random color and label
-    for segment in result:
+    for segment in results:
         mask = np.array(segment['mask'])
         color = random_color()
         label = segment['label']
@@ -70,12 +89,11 @@ file = st.file_uploader("Choose an image...", type=["jpeg", "jpg", "png"])
 if file:
     image = Image.open(file).convert('RGB')
     st.image(file, caption="Uploaded Image.", use_column_width=True)
-    # with st.spinner(text="Segmenting aircraft components..."):
+    with st.spinner(text="Segmenting aircraft components..."):
         # segment the image
-    #     segmented_image = segment_image(file)
-    #
-    # st.image(segmented_image, caption="Segmented Image.", use_column_width=True)
+        segmented_image = segment_image(file)
+        st.image(segmented_image, caption="Segmented Image.", use_column_width=True)
 
 # if __name__ == "__main__":
-    # segment_image("../data/example_airport.jpg")
+#     segment_image("../data/example_airport.jpg")
 
