@@ -121,41 +121,28 @@ def summarize_image(encoded_image):
 
 def detect_objects(image_file):
     """Detects objects in the provided image, accepting either a file path or in-memory image."""
+    image = Image.open(image_file).convert('RGB')
 
-    # Handle in-memory file (BytesIO) or file path
-    if isinstance(image_file, BytesIO):
-        image = Image.open(image_file).convert('RGB')
-        # Extract raw bytes for the client
-        image_file.seek(0)  # Ensure we're at the start
-        image_bytes = image_file.read()
-    else:
-        image = Image.open(image_file).convert('RGB')
-        # Read file from path for raw bytes
-        with open(image_file, "rb") as f:
-            image_bytes = f.read()
+    # Use transformers pipeline for object detection
+    object_detector = pipeline("object-detection", model="facebook/detr-resnet-50")
+    results = object_detector(image)
 
-    model_name = "facebook/detr-resnet-50"
-    client = InferenceClient(
-        model_name,
-        token=HUGGINGFACEHUB_API_TOKEN,
-    )
-
-    # Send the raw bytes to object_detection
-    results = client.object_detection(image=image_bytes)
     draw = ImageDraw.Draw(image)
     detections = ""
 
     for result in results:
-        box = result.box
-        label = result.label
-        score = result.score
-        detections += f"[{int(box.xmin)}, {int(box.ymin)}, {int(box.xmax)}, {int(box.ymax)}] {label} {float(score)}\n"
+        box = result['box']
+        label = result['label']
+        score = result['score']
+        
+        detections += f"[{box['xmin']}, {box['ymin']}, {box['xmax']}, {box['ymax']}] {label} {score:.4f}\n"
 
-        x0, y0, x1, y1 = box.xmin, box.ymin, box.xmax, box.ymax
-        draw.rectangle([x0, y0, x1, y1], outline='red', width=5)
-        draw.text((x0, y0), label, fill='white')
+        x0, y0, x1, y1 = box['xmin'], box['ymin'], box['xmax'], box['ymax']
+        draw.rectangle([x0, y0, x1, y1], outline='red', width=3)
+        draw.text((x0, y0), f"{label} ({score:.2f})", fill='white')
 
     return image, detections
+
 
 def classify(image, model, class_names):
     """Classifies the provided image...."""

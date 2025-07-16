@@ -58,5 +58,5 @@ if picture:
 
     detected, bbox = functions.detect_objects(picture_bytes)
 
-    st.image(detected, caption="Detected Objects", use_column_width=True)
+    st.image(detected, caption="Detected Objects", use_container_width=True)
     st.text("Bounding boxes and labels:\n" + bbox)

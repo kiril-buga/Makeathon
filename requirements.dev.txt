@@ -1,0 +1,27 @@
+autogenstudio
+openai
+# Object detection
+#opencv-python
+opencv-python-headless
+ # For streamlit deployment
+# Chroma
+chroma
+# Streamlit
+streamlit
+matplotlib
+#tabulate
+#timm
+# Huggingface
+timm
+huggingface-hub
+transformers
+# Langchain
+langchain
+langchain-chroma
+langchain-community
+langchain-core
+langchain-huggingface
+langchain-openai
+langchain-text-splitters
+langchain-groq
+langgraph

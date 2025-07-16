@@ -52,7 +52,7 @@ file = st.file_uploader("Choose an image...", type=["jpeg", "jpg", "png"])
 if file:
     # display the image
     image = Image.open(file).convert('RGB')
-    st.image(image, caption="Uploaded Image.", use_column_width=True)
+    st.image(image, caption="Uploaded Image.", use_container_width=True)
 
     # classify the image
    # class_name, conf_score = functions.classify(image, model, class_names)
